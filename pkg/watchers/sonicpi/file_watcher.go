@@ -21,7 +21,7 @@ type FileWatcher struct {
 	callback      func(common.ExecutionEvent)
 	lastModified  map[string]time.Time
 	stopChan      chan struct{}
-	
+
 	// Polling interval for file changes
 	pollInterval time.Duration
 }
@@ -34,8 +34,8 @@ func NewFileWatcher(workspacePath string) *FileWatcher {
 			Environment: "sonic-pi-files",
 			Enabled:     true,
 			Options: map[string]string{
-				"workspace_path":  workspacePath,
-				"poll_interval":   "1s",
+				"workspace_path": workspacePath,
+				"poll_interval":  "1s",
 			},
 		},
 		workspacePath: workspacePath,
@@ -49,26 +49,26 @@ func NewFileWatcher(workspacePath string) *FileWatcher {
 func (w *FileWatcher) Start(callback func(common.ExecutionEvent)) error {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
-	
+
 	if w.running {
 		return fmt.Errorf("file watcher is already running")
 	}
-	
+
 	// Check if workspace path exists
 	if _, err := os.Stat(w.workspacePath); os.IsNotExist(err) {
 		return fmt.Errorf("workspace path does not exist: %s", w.workspacePath)
 	}
-	
+
 	w.callback = callback
 	w.running = true
 	w.stopChan = make(chan struct{})
-	
+
 	// Initialize file modification times
 	w.scanWorkspaceFiles()
-	
+
 	// Start monitoring in a goroutine
 	go w.monitorFiles()
-	
+
 	return nil
 }
 
@@ -76,14 +76,14 @@ func (w *FileWatcher) Start(callback func(common.ExecutionEvent)) error {
 func (w *FileWatcher) Stop() error {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
-	
+
 	if !w.running {
 		return nil
 	}
-	
+
 	w.running = false
 	close(w.stopChan)
-	
+
 	return nil
 }
 
@@ -113,7 +113,7 @@ func (w *FileWatcher) GetEnvironment() string {
 func (w *FileWatcher) monitorFiles() {
 	ticker := time.NewTicker(w.pollInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-w.stopChan:
@@ -130,13 +130,13 @@ func (w *FileWatcher) scanWorkspaceFiles() {
 		if err != nil {
 			return nil // Continue on errors
 		}
-		
+
 		if w.isSonicPiFile(path) {
 			if info, err := d.Info(); err == nil {
 				w.lastModified[path] = info.ModTime()
 			}
 		}
-		
+
 		return nil
 	})
 }
@@ -147,23 +147,23 @@ func (w *FileWatcher) checkForChanges() {
 		if err != nil {
 			return nil // Continue on errors
 		}
-		
+
 		if !w.isSonicPiFile(path) {
 			return nil
 		}
-		
+
 		info, err := d.Info()
 		if err != nil {
 			return nil
 		}
-		
+
 		currentModTime := info.ModTime()
 		lastModTime, exists := w.lastModified[path]
-		
+
 		// Check if file was modified
 		if !exists || currentModTime.After(lastModTime) {
 			w.lastModified[path] = currentModTime
-			
+
 			// Only trigger event if file existed before (not for new files on first scan)
 			if exists {
 				event := w.createExecutionEvent(path, currentModTime)
@@ -172,7 +172,7 @@ func (w *FileWatcher) checkForChanges() {
 				}
 			}
 		}
-		
+
 		return nil
 	})
 }
@@ -183,22 +183,22 @@ func (w *FileWatcher) isSonicPiFile(path string) bool {
 	// - workspace_0, workspace_1, etc.
 	// - *.rb files
 	// - buffer_* files
-	
+
 	name := filepath.Base(path)
-	
+
 	patterns := []string{
 		`^workspace_\d+$`,
 		`^buffer_\d+$`,
 		`\.rb$`,
 		`\.sonic$`,
 	}
-	
+
 	for _, pattern := range patterns {
 		if matched, _ := regexp.MatchString(pattern, name); matched {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -208,7 +208,7 @@ func (w *FileWatcher) createExecutionEvent(filePath string, modTime time.Time) c
 	contentStr := ""
 	success := true
 	errorMessage := ""
-	
+
 	if err != nil {
 		success = false
 		errorMessage = fmt.Sprintf("Failed to read file: %v", err)
@@ -216,11 +216,11 @@ func (w *FileWatcher) createExecutionEvent(filePath string, modTime time.Time) c
 	} else {
 		contentStr = string(content)
 	}
-	
+
 	// Extract buffer name from file path
 	fileName := filepath.Base(filePath)
 	buffer := w.extractBufferName(fileName)
-	
+
 	return common.ExecutionEvent{
 		Timestamp:    modTime,
 		Content:      contentStr,
@@ -243,17 +243,17 @@ func (w *FileWatcher) extractBufferName(fileName string) string {
 	if matched, _ := regexp.MatchString(`^workspace_(\d+)$`, fileName); matched {
 		return fileName
 	}
-	
+
 	// Extract buffer number from buffer files
 	if matched, _ := regexp.MatchString(`^buffer_(\d+)$`, fileName); matched {
 		return fileName
 	}
-	
+
 	// For .rb files, use the file name without extension
 	if filepath.Ext(fileName) == ".rb" {
 		return fileName[:len(fileName)-3]
 	}
-	
+
 	// Default to file name
 	return fileName
 }
@@ -262,7 +262,7 @@ func (w *FileWatcher) extractBufferName(fileName string) string {
 func (w *FileWatcher) SetPollInterval(interval time.Duration) {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
-	
+
 	w.pollInterval = interval
 	w.config.Options["poll_interval"] = interval.String()
 }

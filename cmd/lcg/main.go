@@ -43,7 +43,7 @@ func main() {
 
 func handleInit(args []string) {
 	var path string
-	
+
 	if len(args) > 0 {
 		path = args[0]
 	} else {
@@ -70,7 +70,7 @@ func handleCommit(args []string) {
 	content := commitFlags.String("c", "", "Code content to commit")
 	language := commitFlags.String("l", "unknown", "Programming language")
 	buffer := commitFlags.String("b", "main", "Buffer name")
-	
+
 	commitFlags.Parse(args)
 
 	if *message == "" {
@@ -100,9 +100,9 @@ func handleCommit(args []string) {
 
 	// Create execution metadata
 	metadata := core.ExecutionMetadata{
-		Buffer:    *buffer,
-		Language:  *language,
-		Success:   true,
+		Buffer:      *buffer,
+		Language:    *language,
+		Success:     true,
 		Environment: "cli",
 	}
 
@@ -120,7 +120,7 @@ func handleCommit(args []string) {
 func handleLog(args []string) {
 	logFlags := flag.NewFlagSet("log", flag.ExitOnError)
 	limit := logFlags.Int("n", 10, "Number of commits to show")
-	
+
 	logFlags.Parse(args)
 
 	// Get current directory
@@ -162,7 +162,7 @@ func handleLog(args []string) {
 		fmt.Printf("Language: %s\n", commit.Metadata.Language)
 		fmt.Printf("Buffer: %s\n", commit.Metadata.Buffer)
 		fmt.Printf("\n    %s\n", commit.Message)
-		
+
 		if i < len(commits)-1 {
 			fmt.Println()
 		}

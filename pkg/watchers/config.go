@@ -9,12 +9,12 @@ import (
 
 // GlobalConfig holds configuration for all watchers
 type GlobalConfig struct {
-	Watchers          map[string]WatcherConfig `json:"watchers"`
-	DefaultLanguage   string                   `json:"default_language"`
-	AutoCommit        bool                     `json:"auto_commit"`
-	CommitMessage     string                   `json:"commit_message"`
-	WorkspacePath     string                   `json:"workspace_path"`
-	LogLevel          string                   `json:"log_level"`
+	Watchers        map[string]WatcherConfig `json:"watchers"`
+	DefaultLanguage string                   `json:"default_language"`
+	AutoCommit      bool                     `json:"auto_commit"`
+	CommitMessage   string                   `json:"commit_message"`
+	WorkspacePath   string                   `json:"workspace_path"`
+	LogLevel        string                   `json:"log_level"`
 }
 
 // DefaultGlobalConfig returns a default configuration
@@ -77,16 +77,16 @@ func (cm *ConfigManager) LoadConfig() error {
 		// Config file doesn't exist, use defaults
 		return cm.SaveConfig()
 	}
-	
+
 	data, err := os.ReadFile(cm.configPath)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
-	
+
 	if err := json.Unmarshal(data, &cm.config); err != nil {
 		return fmt.Errorf("failed to parse config file: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -97,16 +97,16 @@ func (cm *ConfigManager) SaveConfig() error {
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
-	
+
 	data, err := json.MarshalIndent(cm.config, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
-	
+
 	if err := os.WriteFile(cm.configPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -140,10 +140,10 @@ func (cm *ConfigManager) EnableWatcher(name string) error {
 	if !exists {
 		return fmt.Errorf("watcher '%s' not found", name)
 	}
-	
+
 	config.Enabled = true
 	cm.config.Watchers[name] = config
-	
+
 	return nil
 }
 
@@ -153,10 +153,10 @@ func (cm *ConfigManager) DisableWatcher(name string) error {
 	if !exists {
 		return fmt.Errorf("watcher '%s' not found", name)
 	}
-	
+
 	config.Enabled = false
 	cm.config.Watchers[name] = config
-	
+
 	return nil
 }
 
@@ -166,14 +166,14 @@ func (cm *ConfigManager) SetWatcherOption(watcherName, optionName, optionValue s
 	if !exists {
 		return fmt.Errorf("watcher '%s' not found", watcherName)
 	}
-	
+
 	if config.Options == nil {
 		config.Options = make(map[string]string)
 	}
-	
+
 	config.Options[optionName] = optionValue
 	cm.config.Watchers[watcherName] = config
-	
+
 	return nil
 }
 
@@ -200,7 +200,7 @@ func (cm *ConfigManager) GetEnabledWatchers() []string {
 // ValidateConfig validates the current configuration
 func (cm *ConfigManager) ValidateConfig() error {
 	config := cm.config
-	
+
 	// Validate log level
 	validLogLevels := []string{"debug", "info", "warn", "error"}
 	validLevel := false
@@ -213,14 +213,14 @@ func (cm *ConfigManager) ValidateConfig() error {
 	if !validLevel {
 		return fmt.Errorf("invalid log level: %s", config.LogLevel)
 	}
-	
+
 	// Validate watcher configurations
 	for name, watcherConfig := range config.Watchers {
 		if err := cm.validateWatcherConfig(name, watcherConfig); err != nil {
 			return fmt.Errorf("invalid config for watcher '%s': %w", name, err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -230,11 +230,11 @@ func (cm *ConfigManager) validateWatcherConfig(name string, config WatcherConfig
 	if config.Language == "" {
 		return fmt.Errorf("language is required")
 	}
-	
+
 	if config.Environment == "" {
 		return fmt.Errorf("environment is required")
 	}
-	
+
 	// Validate specific watcher types
 	switch name {
 	case "sonicpi-osc":
@@ -244,7 +244,7 @@ func (cm *ConfigManager) validateWatcherConfig(name string, config WatcherConfig
 	case "tidal-ghci":
 		return cm.validateTidalGHCiConfig(config)
 	}
-	
+
 	return nil
 }
 
@@ -256,7 +256,7 @@ func (cm *ConfigManager) validateSonicPiOSCConfig(config WatcherConfig) error {
 		}
 		// Could add port range validation here
 	}
-	
+
 	return nil
 }
 
@@ -267,7 +267,7 @@ func (cm *ConfigManager) validateSonicPiFilesConfig(config WatcherConfig) error 
 			return fmt.Errorf("workspace_path does not exist: %s", workspacePath)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -278,7 +278,7 @@ func (cm *ConfigManager) validateTidalGHCiConfig(config WatcherConfig) error {
 			return fmt.Errorf("ghci_command cannot be empty")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -288,6 +288,6 @@ func GetDefaultConfigPath() string {
 	if err != nil {
 		return ".livecodegit/watchers.json"
 	}
-	
+
 	return filepath.Join(homeDir, ".livecodegit", "watchers.json")
 }

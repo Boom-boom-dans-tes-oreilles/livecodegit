@@ -21,7 +21,7 @@ type LiveCodeRepository struct {
 func NewRepository(path string) *LiveCodeRepository {
 	fsStorage := storage.NewFileSystemStorage(path)
 	index := storage.NewIndex(fsStorage)
-	
+
 	return &LiveCodeRepository{
 		path:    path,
 		storage: fsStorage,
@@ -32,7 +32,7 @@ func NewRepository(path string) *LiveCodeRepository {
 // Init initializes a new LiveCodeGit repository
 func (repo *LiveCodeRepository) Init(path string) error {
 	repo.path = path
-	
+
 	// Check if repository already exists
 	repoDir := filepath.Join(path, storage.RepoDir)
 	if _, err := os.Stat(repoDir); err == nil {
@@ -48,7 +48,7 @@ func (repo *LiveCodeRepository) Init(path string) error {
 	// Initialize index
 	repo.storage = fsStorage
 	repo.index = storage.NewIndex(fsStorage)
-	
+
 	if err := repo.index.LoadIndex(); err != nil {
 		return fmt.Errorf("failed to initialize index: %w", err)
 	}
@@ -72,7 +72,7 @@ func (repo *LiveCodeRepository) Commit(content string, message string, metadata 
 
 	// Generate hash from content
 	hash := storage.GenerateHash(content + message + time.Now().String())
-	
+
 	// Get parent commit
 	parentHash := repo.index.GetHead()
 
@@ -181,7 +181,7 @@ func (repo *LiveCodeRepository) StartPerformance(name string) (*Performance, err
 		Name:        name,
 		StartTime:   time.Now(),
 		CommitCount: 0,
-		Branch:      "main", // TODO: Support branches
+		Branch:      "main",      // TODO: Support branches
 		Author:      "livecoder", // TODO: Get from config
 	}
 
@@ -218,7 +218,7 @@ func (repo *LiveCodeRepository) IsInitialized() bool {
 // LoadRepository loads an existing repository from the given path
 func LoadRepository(path string) (*LiveCodeRepository, error) {
 	repo := NewRepository(path)
-	
+
 	if !repo.IsInitialized() {
 		return nil, fmt.Errorf("no repository found at %s", path)
 	}

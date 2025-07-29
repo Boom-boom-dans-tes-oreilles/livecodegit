@@ -19,12 +19,12 @@ type OSCWatcher struct {
 	running  bool
 	mutex    sync.RWMutex
 	callback func(common.ExecutionEvent)
-	
+
 	// Sonic Pi specific settings
-	oscPort      int
+	oscPort       int
 	workspacePath string
-	currentBPM   float64
-	startTime    time.Time
+	currentBPM    float64
+	startTime     time.Time
 }
 
 // NewOSCWatcher creates a new Sonic Pi OSC watcher
@@ -50,31 +50,31 @@ func NewOSCWatcher(port int, workspacePath string) *OSCWatcher {
 func (w *OSCWatcher) Start(callback func(common.ExecutionEvent)) error {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
-	
+
 	if w.running {
 		return fmt.Errorf("watcher is already running")
 	}
-	
+
 	w.callback = callback
 	w.startTime = time.Now()
-	
+
 	// Listen for OSC messages on UDP
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", w.oscPort))
 	if err != nil {
 		return fmt.Errorf("failed to resolve UDP address: %w", err)
 	}
-	
+
 	conn, err := net.ListenUDP("udp", addr)
 	if err != nil {
 		return fmt.Errorf("failed to listen on UDP port %d: %w", w.oscPort, err)
 	}
-	
+
 	w.conn = conn
 	w.running = true
-	
+
 	// Start listening for messages in a goroutine
 	go w.listenForMessages()
-	
+
 	return nil
 }
 
@@ -82,17 +82,17 @@ func (w *OSCWatcher) Start(callback func(common.ExecutionEvent)) error {
 func (w *OSCWatcher) Stop() error {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
-	
+
 	if !w.running {
 		return nil
 	}
-	
+
 	w.running = false
-	
+
 	if w.conn != nil {
 		return w.conn.Close()
 	}
-	
+
 	return nil
 }
 
@@ -121,11 +121,11 @@ func (w *OSCWatcher) GetEnvironment() string {
 // listenForMessages continuously listens for OSC messages
 func (w *OSCWatcher) listenForMessages() {
 	buffer := make([]byte, 4096)
-	
+
 	for w.IsRunning() {
 		w.conn.SetReadDeadline(time.Now().Add(1 * time.Second))
 		n, err := w.conn.Read(buffer)
-		
+
 		if err != nil {
 			if netError, ok := err.(net.Error); ok && netError.Timeout() {
 				continue // Timeout is expected, continue listening
@@ -135,7 +135,7 @@ func (w *OSCWatcher) listenForMessages() {
 			}
 			continue
 		}
-		
+
 		message := string(buffer[:n])
 		w.processOSCMessage(message)
 	}
@@ -147,14 +147,14 @@ func (w *OSCWatcher) processOSCMessage(message string) {
 	// "/run-code" followed by parameters
 	// "/error" for errors
 	// "/info" for info messages
-	
+
 	lines := strings.Split(message, "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
-		
+
 		if w.isExecutionMessage(line) {
 			event := w.parseExecutionEvent(line)
 			if w.callback != nil {
@@ -174,13 +174,13 @@ func (w *OSCWatcher) isExecutionMessage(message string) bool {
 		"/start-recording",
 		"/buffer-update",
 	}
-	
+
 	for _, pattern := range executionPatterns {
 		if strings.Contains(message, pattern) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -194,7 +194,7 @@ func (w *OSCWatcher) updateBPM(message string) {
 	// Look for BPM values in the message
 	bpmRegex := regexp.MustCompile(`(?:bpm|BPM)[\s:=]*(\d+(?:\.\d+)?)`)
 	matches := bpmRegex.FindStringSubmatch(message)
-	
+
 	if len(matches) > 1 {
 		if bpm, err := strconv.ParseFloat(matches[1], 64); err == nil {
 			w.currentBPM = bpm
@@ -205,27 +205,27 @@ func (w *OSCWatcher) updateBPM(message string) {
 // parseExecutionEvent creates an ExecutionEvent from an OSC message
 func (w *OSCWatcher) parseExecutionEvent(message string) common.ExecutionEvent {
 	now := time.Now()
-	
+
 	// Extract buffer name if present
 	buffer := "workspace-0" // Default buffer
 	bufferRegex := regexp.MustCompile(`buffer[:\s]+(\w+)`)
 	if matches := bufferRegex.FindStringSubmatch(message); len(matches) > 1 {
 		buffer = matches[1]
 	}
-	
+
 	// Determine if this was a successful execution
 	success := !strings.Contains(message, "/error")
 	errorMessage := ""
 	if !success {
 		errorMessage = w.extractErrorMessage(message)
 	}
-	
+
 	// Calculate beats from start
 	beatsFromStart := w.calculateBeatsFromStart(now)
-	
+
 	// Try to read current buffer content
 	content := w.readBufferContent(buffer)
-	
+
 	return common.ExecutionEvent{
 		Timestamp:      now,
 		Content:        content,
@@ -269,7 +269,7 @@ func (w *OSCWatcher) readBufferContent(bufferName string) string {
 	if w.workspacePath == "" {
 		return fmt.Sprintf("# Code executed in buffer: %s\n# (content not available without workspace path)", bufferName)
 	}
-	
+
 	// For now, return a simple placeholder
 	// TODO: Implement actual file reading when workspace path is available
 	// Sonic Pi typically saves workspace content in files named like "workspace_0", etc.

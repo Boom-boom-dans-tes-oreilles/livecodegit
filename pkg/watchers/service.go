@@ -20,11 +20,11 @@ type WatcherService struct {
 	repository    *core.LiveCodeRepository
 	running       bool
 	mutex         sync.RWMutex
-	
+
 	// Auto-commit configuration
 	autoCommit        bool
 	commitMessageTmpl *template.Template
-	
+
 	// Statistics
 	totalExecutions int64
 	totalCommits    int64
@@ -35,7 +35,7 @@ type WatcherService struct {
 func NewWatcherService(repo *core.LiveCodeRepository, configPath string) *WatcherService {
 	manager := NewWatcherManager()
 	configManager := NewConfigManager(configPath)
-	
+
 	service := &WatcherService{
 		manager:       manager,
 		configManager: configManager,
@@ -43,10 +43,10 @@ func NewWatcherService(repo *core.LiveCodeRepository, configPath string) *Watche
 		running:       false,
 		autoCommit:    true,
 	}
-	
+
 	// Set up the callback for execution events
 	manager.SetCallback(service.handleExecutionEvent)
-	
+
 	return service
 }
 
@@ -56,36 +56,36 @@ func (ws *WatcherService) Initialize() error {
 	if err := ws.configManager.LoadConfig(); err != nil {
 		return fmt.Errorf("failed to load watcher configuration: %w", err)
 	}
-	
+
 	// Validate configuration
 	if err := ws.configManager.ValidateConfig(); err != nil {
 		return fmt.Errorf("invalid watcher configuration: %w", err)
 	}
-	
+
 	// Set up commit message template
 	config := ws.configManager.GetConfig()
 	ws.autoCommit = config.AutoCommit
-	
+
 	tmpl, err := template.New("commit-message").Parse(config.CommitMessage)
 	if err != nil {
 		return fmt.Errorf("invalid commit message template: %w", err)
 	}
 	ws.commitMessageTmpl = tmpl
-	
+
 	// Register available watchers
 	ws.registerWatchers()
-	
+
 	return nil
 }
 
 // registerWatchers creates and registers all configured watchers
 func (ws *WatcherService) registerWatchers() {
 	config := ws.configManager.GetConfig()
-	
+
 	for name, watcherConfig := range config.Watchers {
 		var watcher ExecutionWatcher
 		var err error
-		
+
 		switch name {
 		case "sonicpi-osc":
 			watcher, err = ws.createSonicPiOSCWatcher(watcherConfig)
@@ -97,12 +97,12 @@ func (ws *WatcherService) registerWatchers() {
 			log.Printf("Unknown watcher type: %s", name)
 			continue
 		}
-		
+
 		if err != nil {
 			log.Printf("Failed to create watcher %s: %v", name, err)
 			continue
 		}
-		
+
 		// Always register the watcher, but whether it starts depends on enabled status
 		ws.manager.RegisterWatcher(name, watcher)
 	}
@@ -120,9 +120,9 @@ func (ws *WatcherService) createSonicPiOSCWatcher(config WatcherConfig) (Executi
 		}
 		// In a real implementation, use strconv.Atoi
 	}
-	
+
 	workspacePath := config.Options["workspace_path"]
-	
+
 	return sonicpi.NewOSCWatcher(port, workspacePath), nil
 }
 
@@ -132,7 +132,7 @@ func (ws *WatcherService) createSonicPiFileWatcher(config WatcherConfig) (Execut
 	if workspacePath == "" {
 		return nil, fmt.Errorf("workspace_path is required for sonicpi-files watcher")
 	}
-	
+
 	return sonicpi.NewFileWatcher(workspacePath), nil
 }
 
@@ -145,11 +145,11 @@ func (ws *WatcherService) createTidalGHCiWatcher(config WatcherConfig) (Executio
 func (ws *WatcherService) Start() error {
 	ws.mutex.Lock()
 	defer ws.mutex.Unlock()
-	
+
 	if ws.running {
 		return fmt.Errorf("watcher service is already running")
 	}
-	
+
 	// Start only enabled watchers
 	for _, name := range ws.configManager.GetEnabledWatchers() {
 		if watcher, exists := ws.manager.GetWatcher(name); exists {
@@ -158,10 +158,10 @@ func (ws *WatcherService) Start() error {
 			}
 		}
 	}
-	
+
 	ws.running = true
 	log.Printf("Watcher service started with %d active watchers", len(ws.configManager.GetEnabledWatchers()))
-	
+
 	return nil
 }
 
@@ -169,18 +169,18 @@ func (ws *WatcherService) Start() error {
 func (ws *WatcherService) Stop() error {
 	ws.mutex.Lock()
 	defer ws.mutex.Unlock()
-	
+
 	if !ws.running {
 		return nil
 	}
-	
+
 	if err := ws.manager.StopAll(); err != nil {
 		return fmt.Errorf("failed to stop watchers: %w", err)
 	}
-	
+
 	ws.running = false
 	log.Printf("Watcher service stopped")
-	
+
 	return nil
 }
 
@@ -197,10 +197,10 @@ func (ws *WatcherService) handleExecutionEvent(event ExecutionEvent) {
 	ws.totalExecutions++
 	ws.lastExecution = event.Timestamp
 	ws.mutex.Unlock()
-	
-	log.Printf("Execution detected: %s/%s - %s", event.Language, event.Buffer, 
+
+	log.Printf("Execution detected: %s/%s - %s", event.Language, event.Buffer,
 		truncateString(event.Content, 50))
-	
+
 	// Create auto-commit if enabled
 	if ws.autoCommit {
 		if err := ws.createAutoCommit(event); err != nil {
@@ -220,23 +220,23 @@ func (ws *WatcherService) createAutoCommit(event ExecutionEvent) error {
 	if err != nil {
 		return fmt.Errorf("failed to generate commit message: %w", err)
 	}
-	
+
 	// Convert event to metadata
 	metadata := event.ToExecutionMetadata()
-	
+
 	// Create commit
 	_, err = ws.repository.Commit(event.Content, commitMessage, metadata)
 	if err != nil {
 		return fmt.Errorf("failed to create commit: %w", err)
 	}
-	
+
 	return nil
 }
 
 // generateCommitMessage generates a commit message from template and event
 func (ws *WatcherService) generateCommitMessage(event ExecutionEvent) (string, error) {
 	var buf strings.Builder
-	
+
 	// Create template data
 	data := struct {
 		Language    string
@@ -246,21 +246,21 @@ func (ws *WatcherService) generateCommitMessage(event ExecutionEvent) (string, e
 		Success     string
 	}{
 		Language:    event.Language,
-		Environment: event.Environment, 
+		Environment: event.Environment,
 		Buffer:      event.Buffer,
 		Timestamp:   event.Timestamp.Format("15:04:05"),
-		Success:     func() string {
+		Success: func() string {
 			if event.Success {
 				return "success"
 			}
 			return "error"
 		}(),
 	}
-	
+
 	if err := ws.commitMessageTmpl.Execute(&buf, data); err != nil {
 		return "", err
 	}
-	
+
 	return buf.String(), nil
 }
 
@@ -268,7 +268,7 @@ func (ws *WatcherService) generateCommitMessage(event ExecutionEvent) (string, e
 func (ws *WatcherService) GetStats() ServiceStats {
 	ws.mutex.RLock()
 	defer ws.mutex.RUnlock()
-	
+
 	return ServiceStats{
 		TotalExecutions: ws.totalExecutions,
 		TotalCommits:    ws.totalCommits,
@@ -288,7 +288,7 @@ func (ws *WatcherService) EnableWatcher(name string) error {
 	if err := ws.configManager.EnableWatcher(name); err != nil {
 		return err
 	}
-	
+
 	// Save configuration
 	return ws.configManager.SaveConfig()
 }
@@ -303,11 +303,11 @@ func (ws *WatcherService) DisableWatcher(name string) error {
 			}
 		}
 	}
-	
+
 	if err := ws.configManager.DisableWatcher(name); err != nil {
 		return err
 	}
-	
+
 	// Save configuration
 	return ws.configManager.SaveConfig()
 }

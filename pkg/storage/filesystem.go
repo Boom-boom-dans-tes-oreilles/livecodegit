@@ -31,13 +31,13 @@ type Commit struct {
 
 // ExecutionMetadata contains performance-specific information about code execution
 type ExecutionMetadata struct {
-	Buffer        string  `json:"buffer"`
-	Language      string  `json:"language"`
-	BPM           float64 `json:"bpm,omitempty"`
-	BeatsFromStart int64  `json:"beats_from_start,omitempty"`
-	Success       bool    `json:"success"`
-	ErrorMessage  string  `json:"error_message,omitempty"`
-	Environment   string  `json:"environment,omitempty"`
+	Buffer         string  `json:"buffer"`
+	Language       string  `json:"language"`
+	BPM            float64 `json:"bpm,omitempty"`
+	BeatsFromStart int64   `json:"beats_from_start,omitempty"`
+	Success        bool    `json:"success"`
+	ErrorMessage   string  `json:"error_message,omitempty"`
+	Environment    string  `json:"environment,omitempty"`
 }
 
 // Performance represents a complete livecoding session
@@ -76,13 +76,13 @@ func (fs *FileSystemStorage) WriteCommit(commit *Commit) error {
 	hashPrefix := commit.Hash[:2]
 	hashSuffix := commit.Hash[2:]
 	objDir := filepath.Join(objectsPath, hashPrefix)
-	
+
 	if err := os.MkdirAll(objDir, 0755); err != nil {
 		return fmt.Errorf("failed to create object subdirectory: %w", err)
 	}
 
 	objPath := filepath.Join(objDir, hashSuffix)
-	
+
 	// Serialize commit to JSON
 	data, err := json.MarshalIndent(commit, "", "  ")
 	if err != nil {
@@ -95,7 +95,7 @@ func (fs *FileSystemStorage) WriteCommit(commit *Commit) error {
 // ReadCommit retrieves a commit object by its hash
 func (fs *FileSystemStorage) ReadCommit(hash string) (*Commit, error) {
 	objPath := fs.getObjectPath(hash)
-	
+
 	data, err := os.ReadFile(objPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read commit %s: %w", hash, err)
@@ -117,7 +117,7 @@ func (fs *FileSystemStorage) WritePerformance(performance *Performance) error {
 	}
 
 	perfPath := filepath.Join(perfDir, performance.ID+".json")
-	
+
 	data, err := json.MarshalIndent(performance, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal performance: %w", err)
@@ -129,7 +129,7 @@ func (fs *FileSystemStorage) WritePerformance(performance *Performance) error {
 // ReadPerformance retrieves performance metadata by ID
 func (fs *FileSystemStorage) ReadPerformance(id string) (*Performance, error) {
 	perfPath := filepath.Join(fs.repoPath, RepoDir, PerformanceDir, id+".json")
-	
+
 	data, err := os.ReadFile(perfPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read performance %s: %w", id, err)
@@ -159,7 +159,7 @@ func (fs *FileSystemStorage) ListCommits() ([]string, error) {
 			if err != nil {
 				return err
 			}
-			
+
 			parts := strings.Split(rel, string(filepath.Separator))
 			if len(parts) == 2 {
 				hash := parts[0] + parts[1]
@@ -205,7 +205,7 @@ func (fs *FileSystemStorage) ReadHead() (string, error) {
 // InitializeRepository creates the basic repository structure
 func (fs *FileSystemStorage) InitializeRepository() error {
 	repoDir := filepath.Join(fs.repoPath, RepoDir)
-	
+
 	dirs := []string{
 		repoDir,
 		filepath.Join(repoDir, ObjectsDir),

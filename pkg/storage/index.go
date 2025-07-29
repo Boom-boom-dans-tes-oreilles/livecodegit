@@ -33,7 +33,7 @@ func NewIndex(storage *FileSystemStorage) *Index {
 // LoadIndex reads the index from disk
 func (idx *Index) LoadIndex() error {
 	indexPath := filepath.Join(idx.storage.repoPath, RepoDir, IndexFile)
-	
+
 	data, err := os.ReadFile(indexPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -64,7 +64,7 @@ func (idx *Index) LoadIndex() error {
 // SaveIndex writes the index to disk
 func (idx *Index) SaveIndex() error {
 	indexPath := filepath.Join(idx.storage.repoPath, RepoDir, IndexFile)
-	
+
 	indexData := struct {
 		Entries []IndexEntry `json:"entries"`
 	}{
@@ -97,7 +97,7 @@ func (idx *Index) GetOrderedCommits(limit int) []IndexEntry {
 	// Since entries are added chronologically, we can return them in reverse order
 	// for most recent first
 	entries := make([]IndexEntry, 0)
-	
+
 	start := len(idx.Entries) - limit
 	if start < 0 {
 		start = 0

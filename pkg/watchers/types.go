@@ -41,7 +41,7 @@ func (wm *WatcherManager) StartAll() error {
 	if wm.callback == nil {
 		return fmt.Errorf("no callback function set")
 	}
-	
+
 	var startedAny bool
 	for name, watcher := range wm.watchers {
 		if watcher.GetConfig().Enabled {
@@ -51,7 +51,7 @@ func (wm *WatcherManager) StartAll() error {
 			startedAny = true
 		}
 	}
-	
+
 	wm.running = startedAny
 	return nil
 }
@@ -59,7 +59,7 @@ func (wm *WatcherManager) StartAll() error {
 // StopAll stops all running watchers
 func (wm *WatcherManager) StopAll() error {
 	var lastError error
-	
+
 	for name, watcher := range wm.watchers {
 		if watcher.IsRunning() {
 			if err := watcher.Stop(); err != nil {
@@ -67,7 +67,7 @@ func (wm *WatcherManager) StopAll() error {
 			}
 		}
 	}
-	
+
 	wm.running = false
 	return lastError
 }
@@ -91,4 +91,3 @@ func (wm *WatcherManager) ListWatchers() []string {
 func (wm *WatcherManager) IsRunning() bool {
 	return wm.running
 }
-

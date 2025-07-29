@@ -11,7 +11,7 @@ func createTempConfigFile(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	
+
 	return filepath.Join(tempDir, "watchers.json")
 }
 
@@ -248,7 +248,7 @@ func TestConfigManagerListOperations(t *testing.T) {
 	// Test ListWatchers
 	watchers := manager.ListWatchers()
 	expectedWatchers := []string{"sonicpi-osc", "sonicpi-files", "tidal-ghci"}
-	
+
 	if len(watchers) != len(expectedWatchers) {
 		t.Errorf("Expected %d watchers, got %d", len(expectedWatchers), len(watchers))
 	}
@@ -330,7 +330,7 @@ func TestConfigManagerValidation(t *testing.T) {
 
 func TestGetDefaultConfigPath(t *testing.T) {
 	path := GetDefaultConfigPath()
-	
+
 	if path == "" {
 		t.Errorf("Expected non-empty default config path")
 	}

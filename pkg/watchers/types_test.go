@@ -7,17 +7,17 @@ import (
 
 func TestExecutionEvent(t *testing.T) {
 	event := ExecutionEvent{
-		Timestamp:   time.Now(),
-		Content:     "live_loop :drums do\n  sample :bd_haus\nend",
-		Buffer:      "drums",
-		Language:    "sonicpi",
-		Environment: "sonic-pi",
-		Success:     true,
-		BPM:         120.0,
+		Timestamp:      time.Now(),
+		Content:        "live_loop :drums do\n  sample :bd_haus\nend",
+		Buffer:         "drums",
+		Language:       "sonicpi",
+		Environment:    "sonic-pi",
+		Success:        true,
+		BPM:            120.0,
 		BeatsFromStart: 16,
-		FilePath:    "/path/to/file.rb",
-		LineNumber:  1,
-		ProcessID:   12345,
+		FilePath:       "/path/to/file.rb",
+		LineNumber:     1,
+		ProcessID:      12345,
 		ExtraData: map[string]string{
 			"test_key": "test_value",
 		},
@@ -120,7 +120,7 @@ func TestNewWatcherManager(t *testing.T) {
 
 func TestWatcherManagerRegisterWatcher(t *testing.T) {
 	manager := NewWatcherManager()
-	
+
 	// Create a mock watcher
 	mockWatcher := &MockWatcher{
 		config: WatcherConfig{
@@ -153,7 +153,7 @@ func TestWatcherManagerRegisterWatcher(t *testing.T) {
 
 func TestWatcherManagerCallback(t *testing.T) {
 	manager := NewWatcherManager()
-	
+
 	callbackCalled := false
 	var receivedEvent ExecutionEvent
 

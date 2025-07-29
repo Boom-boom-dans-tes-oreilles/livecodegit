@@ -26,10 +26,10 @@ func createTestRepository(t *testing.T) *core.LiveCodeRepository {
 
 func createTestWatcherService(t *testing.T) (*WatcherService, string) {
 	repo := createTestRepository(t)
-	
+
 	configPath := createTempConfigFile(t)
 	service := NewWatcherService(repo, configPath)
-	
+
 	return service, filepath.Dir(configPath)
 }
 
@@ -370,7 +370,7 @@ func TestWatcherServiceStats(t *testing.T) {
 
 	// Get initial stats
 	stats := service.GetStats()
-	
+
 	if stats.TotalExecutions != 0 {
 		t.Errorf("Expected 0 initial executions, got %d", stats.TotalExecutions)
 	}
@@ -394,9 +394,8 @@ func TestWatcherServiceStats(t *testing.T) {
 	// Enable a watcher to increase active count
 	service.EnableWatcher("sonicpi-osc")
 	stats = service.GetStats()
-	
+
 	if stats.ActiveWatchers != 1 {
 		t.Errorf("Expected 1 active watcher after enabling, got %d", stats.ActiveWatchers)
 	}
 }
-

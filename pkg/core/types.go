@@ -11,10 +11,10 @@ type Performance = storage.Performance
 
 // Repository represents a livecoding performance repository
 type Repository struct {
-	Path         string `json:"path"`
-	Initialized  bool   `json:"initialized"`
+	Path          string `json:"path"`
+	Initialized   bool   `json:"initialized"`
 	CurrentBranch string `json:"current_branch"`
-	HeadCommit   string `json:"head_commit,omitempty"`
+	HeadCommit    string `json:"head_commit,omitempty"`
 }
 
 // RepositoryInterface defines the core operations for a livecoding repository

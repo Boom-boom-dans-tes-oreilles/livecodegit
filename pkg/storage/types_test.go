@@ -7,12 +7,12 @@ import (
 
 func TestCommitCreation(t *testing.T) {
 	metadata := ExecutionMetadata{
-		Buffer:      "main",
-		Language:    "sonicpi",
-		BPM:         120.0,
+		Buffer:         "main",
+		Language:       "sonicpi",
+		BPM:            120.0,
 		BeatsFromStart: 16,
-		Success:     true,
-		Environment: "sonic-pi",
+		Success:        true,
+		Environment:    "sonic-pi",
 	}
 
 	commit := Commit{
@@ -66,13 +66,13 @@ func TestPerformanceCreation(t *testing.T) {
 
 func TestExecutionMetadata(t *testing.T) {
 	metadata := ExecutionMetadata{
-		Buffer:        "bass",
-		Language:      "tidal",
-		BPM:           140.5,
+		Buffer:         "bass",
+		Language:       "tidal",
+		BPM:            140.5,
 		BeatsFromStart: 32,
-		Success:       false,
-		ErrorMessage:  "Syntax error on line 3",
-		Environment:   "tidal-cycles",
+		Success:        false,
+		ErrorMessage:   "Syntax error on line 3",
+		Environment:    "tidal-cycles",
 	}
 
 	if metadata.Buffer != "bass" {
